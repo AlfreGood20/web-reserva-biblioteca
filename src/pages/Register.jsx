@@ -1,19 +1,69 @@
 import React, { useRef, useState } from 'react'
+import { useFormData } from '../hooks/useFormData';
+import { useForm } from '../hooks/useForm';
+import { useRegister } from '../hooks/useRegister';
 
 function Register() {
 
-    const [aceptoTermino, setAceptoTemino ] = useState(false);
+    const [aceptoTermino, setAceptoTermino ] = useState(false);
     const [verContra, setVerContra] = useState(false);
-    const modalRef = useRef(null);
+    const { municipios } = useFormData();
+    const {registrar, modalRef, abrirModal} = useRegister();
 
-    const abrirModal = () => {
-        modalRef.current?.showModal();
-    };
+    const datosPersonales = useForm({
+        nombre: '',
+        apellido_paterno: '',
+        apellido_materno: '',
+        fecha_nacimiento: '',
+        genero: '',
+        curp:''
+    });
 
-    const cerrarModal = () => {
-        modalRef.current?.close();
-    };
+    const telefonoPersonal = useForm({numero: ''});
+    const telefonoCasa = useForm({numero: ''});
+    const telefonoReferencia = useForm({numero: ''});
+
+     const telefonos = [
+        {
+            ...telefonoPersonal.form,
+            tipo_id: 1
+        },
+        {
+            ...telefonoCasa.form,
+            tipo_id: 3
+        },
+        {
+            ...telefonoReferencia.form,
+            tipo_id: 4
+        }
+    ].filter(t => t.numero.trim() !== "");
+
+
+    const direccion = useForm({
+        municipio_id: '',
+        calle: '',
+        colonia: '',
+        numero_exterior: '',
+        numero_interior: '',
+        codigo_postal: ''
+    });
+
+    const credencial = useForm({correo:'', contrasena:''})
     
+    const handleSumit = (e) => {
+        e.preventDefault();
+
+        abrirModal();
+    }
+
+    const handleFinalizarRegistro = () => {
+        registrar({ 
+            ...datosPersonales.form, 
+            telefonos, 
+            direccion: { ...direccion.form, municipio_id: Number(direccion.form.municipio_id)}, 
+            credencial: credencial.form
+        })
+    }
 
     return (
         <div className='p-5 bg-neutral-100'> 
@@ -26,33 +76,35 @@ function Register() {
 
                 <div className='card-body'>
 
-                    <form className='flex flex-col gap-6'>
+                    <form className='flex flex-col gap-6' onSubmit={handleSumit}>
 
                         <label className='text-lg font-bold'>Datos personales</label>
 
                         <div className='flex flex-row gap-3 items-center'>
+
                             <label>Nombre:</label>
-                            <input className='input w-1/3' placeholder='Obligatorio' name='nombre'/>
+                            <input onChange={datosPersonales.handleChange} className='input validator w-1/3' type='text' placeholder='Obligatorio' name='nombre' required/>
 
                             <label>Apellido Paterno:</label>
-                            <input className='input w-1/3' placeholder='Obligatorio' name='apellido_paterno'/>
+                            <input onChange={datosPersonales.handleChange} className='input validator w-1/3' type='text' placeholder='Obligatorio' name='apellido_paterno' required/>
 
                             <label>Apellido Materno:</label>
-                            <input className='input w-1/3' placeholder='Obligatorio' name='apellido_materno'/>
+                            <input onChange={datosPersonales.handleChange} className='input validator w-1/3' type='text' placeholder='Obligatorio' name='apellido_materno' required/>
+
                         </div>
 
                         <div className='flex flex-row gap-3 items-center'>
                             
                             <label>Fecha nacimiento: </label>
-                            <input className='input w-1/2' type='date' name='fecha_necimiento'/>
+                            <input min="1926-01-01" max="2011-01-01" onChange={datosPersonales.handleChange} className='input validator w-1/2' type='date' name='fecha_nacimiento' required/>
 
-                            <label className='select w-1/2'>
-                                <span class="label">Obligatorio:</span>
-                                <select name='genero'>
-                                    <option disabled selected>Elige genero</option>
-                                    <option>Hombre</option>
-                                    <option>Mujer</option>
-                                    <option>Otro</option>
+                            <label className='select validator w-1/2'>
+                                <span className="label">Obligatorio:</span>
+                                <select onChange={datosPersonales.handleChange} className='validator' name='genero' required>
+                                    <option disabled selected value={''}>Elige genero</option>
+                                    <option value={'Hombre'}>Hombre</option>
+                                    <option value={'Mujer'}>Mujer</option>
+                                    <option value={'Otro'}>Otro</option>
                                 </select>
                             </label>
 
@@ -60,81 +112,84 @@ function Register() {
                         
                         <div className='flex flex-col'>
                             <label>Curp: </label>
-                            <input className='input w-full' placeholder='Opcional'/>
+                            <input maxLength={18} pattern='^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$' title="Ingresa una CURP válida" onChange={datosPersonales.handleChange} className='input input-success w-full' type='text' placeholder='Opcional' name='curp'/>
                         </div>
 
                         <label className='text-lg font-bold'>Numero telefonicos</label>
 
                         <div className='flex flex-row gap-5 items-center'>
                             <label>Personal: </label>
-                            <input className='input w-1/3' placeholder='Obligatorio'/>
+                            <input maxLength={10} minLength={10} pattern='[0-9]{10}' title='Debe contener 10 a 12 digitos' onChange={telefonoPersonal.handleChange} className='input validator w-1/3' type='tel' inputMode='numeric' placeholder='Obligatorio' name='numero' required/>
 
                             <label>Casa: </label>
-                            <input className='input w-1/3' placeholder='Opcional'/>
+                            <input maxLength={10} minLength={10} pattern='[0-9]{10}' title='Debe contener 10 a 12 digitos' onChange={telefonoCasa.handleChange} className='input input-success w-1/3' type='tel' inputMode='numeric' placeholder='Opcional' name='numero'/>
 
                             <label>Referencia: </label>
-                            <input className='input w-1/3' placeholder='Obligatorio'/>
+                            <input maxLength={10} minLength={10} pattern='[0-9]{10}' title='Debe contener 10 a 12 digitos' onChange={telefonoReferencia.handleChange} className='input validator w-1/3' type='tel' inputMode='numeric' placeholder='Obligatorio' name='numero' required/>
                         </div>
 
                         <label className='text-lg font-bold'>Direccion</label>
 
                         <div className='flex flex-row gap-5 items-center'>
                             <label>Colonia:</label>
-                            <input className='input w-1/2' placeholder='Obligatorio'/>
+                            <input onChange={direccion.handleChange} className='input validator w-1/2' type='text' placeholder='Obligatorio' name='colonia' required/>
 
                             <label>Calle:</label>
-                            <input className='input w-1/2' placeholder='Obligatorio'/>
+                            <input onChange={direccion.handleChange} className='input validator w-1/2' type='text' placeholder='Obligatorio' name='calle' required/>
                         </div>
 
                         <div className='flex flex-row gap-1 items-center'>
 
                             <label>N.Exterior:</label>
-                            <input className='input w-1/3' placeholder='Opcional'/>
+                            <input maxLength={3} pattern='[0-9]{1,3}' title='Debe contener 3 digitos' onChange={direccion.handleChange} className='input input-success w-1/3' inputMode='numeric' placeholder='Opcional' name='numero_exterior'/>
 
                             <label>N.Interior:</label>
-                            <input className='input w-1/3' placeholder='Opcional'/>
+                            <input maxLength={3} pattern='[0-9]{1,3}' title='Debe contener 3 digitos' onChange={direccion.handleChange} className='input input-success w-1/3' inputMode='numeric' placeholder='Opcional' name='numero_interior'/>
 
                             <label>Codigo postal:</label>
-                            <input className='input w-1/3' placeholder='Obligatorio'/>
+                            <input maxLength={5} pattern='[0-9]{5}' title='Debe contener 5 digitos' onChange={direccion.handleChange} className='input validator w-1/3' inputMode='numeric' placeholder='Obligatorio' name='codigo_postal' required/>
 
                         </div>
 
                         <div className='flex flex-col'>
-                            <label className='select w-full'>
+                            <label className='select validator w-full '>
                                 <span className='label'>Obligatorio:</span>
-                                <select name='municipio_id'>
-                                    <option disabled selected>Elige municipio</option>
-                                    <option>Villahermosa</option>
-                                    <option>Tenosique</option>
-                                    <option>Balacan</option>
-                                    <option>Centla</option>
+                                <select onChange={direccion.handleChange} name='municipio_id' required>
+                                    <option disabled selected value=''>Elige municipio</option>
+
+                                    {municipios.map(municipio => 
+                                            (<option key={municipio.id} value={municipio.id}>{municipio.nombre}</option>)
+                                        )
+                                    }
+
                                 </select>
                             </label>
                         </div>
 
                         <div className='flex flex-row gap-3 justify-center'>
-                        <input type="checkbox" checked={aceptoTermino} class="checkbox" onChange={(e) => setAceptoTemino(e.target.checked)}/>
-                        <span>Acepto</span>
-                        <a className='link'>Terminos y condiciones</a>
+                            <input type="checkbox" required checked={aceptoTermino} className="checkbox validator" onChange={(e) => setAceptoTermino(e.target.checked)}/>
+                            <span>Acepto</span>
+                            <a className='link'>Terminos y condiciones</a>
                         </div>
 
-                        <button className='btn btn-info w-full' type='button' disabled={!aceptoTermino} onClick={abrirModal}>Enviar</button>
+                        <button className='btn btn-info w-full' type='submit' disabled={!aceptoTermino} >Enviar</button>
                     </form>
 
-                    <dialog ref={modalRef} class="modal">
-                        <div class="modal-box">
-                            <h3 class="text-lg font-bold">Para Finalizar</h3>
+
+                    <dialog ref={modalRef} className="modal">
+                        <div className="modal-box">
+                            <h3 className="text-lg font-bold">Para Finalizar</h3>
 
                             <form className='flex flex-col items-center gap-3'>
 
                                 <label>Correo:</label>
-                                <input className='input w-full' type='email' placeholder='Obligatorio'/>
+                                <input onChange={credencial.handleChange} className='input validator w-full' type='email' placeholder='Obligatorio' required name='correo'/>
 
                                 <label>Contraseña:</label>
                                 <div className='join w-full'>
-                                    <input className='input w-full' type={verContra ? 'text' : 'password'} placeholder='Obligatorio'/>
+                                    <input minLength={8} pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$" title="La contraseña debe tener entre 8 y 30 caracteres, al menos una mayúscula, una minúscula y un número."onChange={credencial.handleChange} className='input validator w-full' type={verContra ? 'text' : 'password'} placeholder='Obligatorio' required name='contrasena'/>
                                     <button type='button' className="btn join-item w-25" onClick={() => setVerContra(!verContra)}>
-                                        {verContra? 
+                                        {verContra?
                                         (
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -152,9 +207,11 @@ function Register() {
 
                             </form>
                             
-                            <div class="modal-action">
+                            <div className="modal-action">
                                 <form method="dialog">
-                                    <button class="btn">Finalizar registro</button>
+                                    <button className="btn" type="button" onClick={handleFinalizarRegistro}>
+                                        Finalizar registro
+                                    </button>
                                 </form>
                             </div>
                         </div>
