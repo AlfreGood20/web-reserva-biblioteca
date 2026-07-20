@@ -11,7 +11,7 @@ function Register() {
     const [verContra, setVerContra] = useState(false);
     const { municipios } = useFormData();
     const {registrar, modalRef, abrirModal, cerrarModal} = useRegister();
-    const navegar = useNavigate();
+    const navegacion = useNavigate();
 
     const datosPersonales = useForm({
         nombre: '',
@@ -81,7 +81,7 @@ function Register() {
                 }
             )
             
-            navegar('/login', {
+            navegacion('/login', {
                 state: {
                     successMessage: "Registro exitoso."
                 }
