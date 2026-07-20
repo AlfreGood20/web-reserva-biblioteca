@@ -16,7 +16,7 @@ export async function register(data) {
     return respose;
 }
 
-export async function login(data) {
+export async function postLogin(data) {
 
     const response = await fetch(
         `${API_URL}/auth/login`,{
