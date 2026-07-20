@@ -2,13 +2,16 @@ import React, { useRef, useState } from 'react'
 import { useFormData } from '../hooks/useFormData';
 import { useForm } from '../hooks/useForm';
 import { useRegister } from '../hooks/useRegister';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
 
     const [aceptoTermino, setAceptoTermino ] = useState(false);
     const [verContra, setVerContra] = useState(false);
     const { municipios } = useFormData();
-    const {registrar, modalRef, abrirModal} = useRegister();
+    const {registrar, modalRef, abrirModal, cerrarModal} = useRegister();
+    const navegar = useNavigate();
 
     const datosPersonales = useForm({
         nombre: '',
@@ -56,13 +59,35 @@ function Register() {
         abrirModal();
     }
 
-    const handleFinalizarRegistro = () => {
-        registrar({ 
-            ...datosPersonales.form, 
-            telefonos, 
-            direccion: { ...direccion.form, municipio_id: Number(direccion.form.municipio_id)}, 
-            credencial: credencial.form
-        })
+    const handleFinalizarRegistro = async (e) => {
+        e.preventDefault();
+
+        try {
+
+            await toast.promise(
+                registrar({ 
+                    ...datosPersonales.form, 
+                    telefonos, 
+                    direccion: { ...direccion.form, municipio_id: Number(direccion.form.municipio_id)}, 
+                    credencial: credencial.form
+                }),
+                {
+                    pending: "Validando datos",
+                    error: {
+                        render({ data }) {
+                            return data.message;
+                        }
+                    }
+                }
+            )
+            
+            navegar('/login', {
+                state: {
+                    successMessage: "Registro exitoso."
+                }
+            })
+        } catch (error) { cerrarModal() }
+
     }
 
     return (
@@ -180,14 +205,14 @@ function Register() {
                         <div className="modal-box">
                             <h3 className="text-lg font-bold">Para Finalizar</h3>
 
-                            <form className='flex flex-col items-center gap-3'>
+                            <form className='flex flex-col items-center gap-3' onSubmit={handleFinalizarRegistro}>
 
                                 <label>Correo:</label>
-                                <input onChange={credencial.handleChange} className='input validator w-full' type='email' placeholder='Obligatorio' required name='correo'/>
+                                <input onChange={credencial.handleChange} className='input validator w-full' type='email' placeholder='Obligatorio' name='correo' required/>
 
                                 <label>Contraseña:</label>
                                 <div className='join w-full'>
-                                    <input minLength={8} pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$" title="La contraseña debe tener entre 8 y 30 caracteres, al menos una mayúscula, una minúscula y un número."onChange={credencial.handleChange} className='input validator w-full' type={verContra ? 'text' : 'password'} placeholder='Obligatorio' required name='contrasena'/>
+                                    <input minLength={8} pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$" title="La contraseña debe tener entre 8 y 30 caracteres, al menos una mayúscula, una minúscula y un número."onChange={credencial.handleChange} className='input validator w-full' type={verContra ? 'text' : 'password'} placeholder='Obligatorio' name='contrasena' required/>
                                     <button type='button' className="btn join-item w-25" onClick={() => setVerContra(!verContra)}>
                                         {verContra?
                                         (
@@ -203,17 +228,16 @@ function Register() {
                                         )}
                                     </button>
                                 </div>
-    
+
+
+                                <div className="modal-action">
+                                    <button className="btn" type="submit">
+                                        Finalizar registro
+                                    </button>
+                                </div>
 
                             </form>
                             
-                            <div className="modal-action">
-                                <form method="dialog">
-                                    <button className="btn" type="button" onClick={handleFinalizarRegistro}>
-                                        Finalizar registro
-                                    </button>
-                                </form>
-                            </div>
                         </div>
                     </dialog>
 
