@@ -1,8 +1,54 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Logo from '../assets/logo_app_biblioteca_me_libro.png'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useForm } from '../hooks/useForm'
+import { useLogin } from '../hooks/useLogin';
+import { toast } from 'react-toastify';
+import {useAuth} from '../context/AuthContext'
 
 function Login() {
+
+    const location = useLocation();
+    const navegacion = useNavigate();
+
+    useEffect(() => {
+        if (location.state?.successMessage) {
+
+            toast.success(location.state.successMessage, {
+                toastId: "registro-exitoso",
+            });
+            
+            navegacion(location.pathname, { replace: true });
+        }
+    }, []);
+
+
+    const [cargando, setCargando] = useState(false);
+    const data = useForm({correo:'', contrasena:''});
+    const { entrar } = useLogin();
+    const { login } = useAuth();
+    
+    const handleSumit = async (e) => {
+        e.preventDefault();
+
+        setCargando(true)
+
+        try {
+            
+            const body = await toast.promise(
+                entrar(data.form),
+                {
+                    error: "Credenciales incorrectas."
+                }
+            );
+
+        login(body.token_access);
+
+        navegacion("/");
+        } 
+        catch (error) {}
+        finally{ setCargando(false); }
+    }
 
     return (
         <div className="hero min-h-screen">
@@ -28,32 +74,38 @@ function Login() {
                     </span>
                 </div>
 
-
-
                 <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
                     <div className="card-body">
-                        <fieldset className="fieldset">
 
-                            <label className="label">Correo</label>
-                            <input type="email" className="input" placeholder="Email" />
+                        <form onSubmit={handleSumit}>
 
-                            <label className="label">Contraseña</label>
-                            <input type="password" className="input" placeholder="Password" />
+                            <fieldset className="fieldset">
 
-                            <div className='flex flex-col justify-center items-center'>
-                                <a className="link link-hover">¿Olvidaste la contraseña?</a>
-                            </div>
+                                <label className="label">Correo</label>
+                                <input onChange={data.handleChange} name='correo' type="email" className="input" placeholder="Email" required/>
 
-                            <button className="btn btn-neutral mt-4">Entrar</button>
+                                <label className="label">Contraseña</label>
+                                <input onChange={data.handleChange} name='contrasena' type="password" className="input" placeholder="Password" required/>
 
-                            <div className='flex flex-col justify-center items-center'>
-                                <span>¿No tienes cuenta?</span>
-                                <Link className='link-info font-bold' to="/register">
-                                    Registrarme
-                                </Link>
-                            </div>
+                                <div className='flex flex-col justify-center items-center'>
+                                    <a className="link link-hover">¿Olvidaste la contraseña?</a>
+                                </div>
 
-                        </fieldset>
+                                <button type='submit' className = 'btn btn-neutral mt-4' disabled = {cargando}>
+                                    {cargando ? (<span className="loading loading-spinner"></span>) : ("Entrar")}
+                                </button>
+
+                                <div className='flex flex-col justify-center items-center'>
+                                    <span>¿No tienes cuenta?</span>
+                                    <Link className='link-info font-bold' to="/register">
+                                        Registrarme
+                                    </Link>
+                                </div>
+
+                            </fieldset>
+
+                        </form>
+
                     </div>
                 </div>
 
