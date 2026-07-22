@@ -1,6 +1,6 @@
 import React from 'react'
-import Menu from '../components/Menu'
 import Book from '../components/Book'
+import Navbar from '../components/Navbar'
 
 function Home() {
 
@@ -14,18 +14,20 @@ function Home() {
 
   return (
     <>
-        <Menu />
+        <Navbar />
 
         <div className='flex flex-col p-5'>
-          <h1 className='text-lg font-bold'>Más recientes</h1>
 
-          <div className='flex flex-row overflow-x-scroll mt-5 gap-5'>
+          <h1 className='text-lg font-bold'>Libros más recientes</h1>
+          <div className='flex flex-row overflow-x-scroll gap-5'>
 
             {Array.from({ length: 10 }).map((_, index) => (
               <Book key={index} libro={libro}/>
             ))}
 
           </div>
+
+          <h1 className='text-lg font-bold'>Libros más pedidos</h1>
 
         </div>
     </>
