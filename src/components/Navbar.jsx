@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom';
 import { usePerfil } from '../hooks/usePerfil';
 import Logo from '../assets/logo_app_biblioteca_me_libro.png'
+import  Menu  from '../components/Menu'
 
-function Menu() {
+function Navbar() {
 
     const {isAuthenticated, accessToken, cargando} = useAuth();
     const {perfil, cargando: cargandoPerfil} = usePerfil();
@@ -20,7 +21,7 @@ function Menu() {
             </div>
 
             <div className="navbar-center">
-                <input type="text" placeholder="Buscar libro" className="input input-bordered w-50 md:w-100" />
+                <input type="search" placeholder="Buscar libro" className="input input-bordered w-50 md:w-100" />
             </div>
 
            <div className="navbar-end">
@@ -42,11 +43,13 @@ function Menu() {
                         </Link>
                     </div>
 
-                ) : !cargandoPerfil ?  (
+                ) : cargandoPerfil ?  (
+
                     <div className='flex flex-row gap-5 items-center'>
-                        <div class="skeleton h-auto w-50"></div>
-                        <div class="skeleton h-16 w-16 shrink-0 rounded-full"></div>
+                        <div class="skeleton h-15 w-90"></div>
+                        <div class="skeleton h-12 w-12 shrink-0 rounded-full"></div>
                     </div>
+
                 ): (<Menu perfil={perfil}/>)
                 }
             </div>
@@ -55,4 +58,4 @@ function Menu() {
     )
 }
 
-export default Menu
+export default Navbar
