@@ -1,7 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import Profile from '../components/Profile'
 
 function Menu({ perfil }) {
+
+    const abrirPerfil = () => {
+        document.getElementById('perfil').showModal();
+    };
+
     return (
         <div className='flex flex-row items-center gap-5'>
             <ul className="menu bg-base-200 lg:menu-horizontal rounded-box">
@@ -42,13 +48,21 @@ function Menu({ perfil }) {
                 </div>
                 <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
                     <li>
-                        <a>Perfil</a>
+                        <button onClick={abrirPerfil}>Ver perfil</button>
+                    </li>
+                    <li>
+                        <a>Mis reservas</a>
+                    </li>
+                    <li>
+                        <a>Mis prestamos</a>
                     </li>
                     <li>
                         <a>Salir sesion</a>
                     </li>
                 </ul>
             </div>
+
+            <Profile />
         </div>
     )
 }
